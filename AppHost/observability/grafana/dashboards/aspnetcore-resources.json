@@ -1,0 +1,151 @@
+{
+  "id": null,
+  "uid": "aspnetcore-resources",
+  "title": "ASP.NET Core Resources",
+  "tags": ["dotnet", "aspnetcore", "road-to-highload"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "job",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "query": "label_values(dotnet_process_memory_working_set_bytes, job)",
+        "refresh": 2,
+        "includeAll": false,
+        "current": {}
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "query": "label_values(dotnet_process_memory_working_set_bytes{job=~\"$job\"}, instance)",
+        "refresh": 2,
+        "includeAll": true,
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Working set (memory)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 15, "spanNulls": true }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "dotnet_process_memory_working_set_bytes{job=~\"$job\", instance=~\"$instance\"}",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "CPU time (rate)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": { "fillOpacity": 15, "spanNulls": true }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (instance) (rate(dotnet_process_cpu_time_seconds_total{job=~\"$job\", instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "GC heap size",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 10, "spanNulls": true }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "dotnet_gc_last_collection_heap_size_bytes{job=~\"$job\", instance=~\"$instance\"}",
+          "legendFormat": "{{gc_heap_generation}} {{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "GC collections (rate)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "fillOpacity": 10, "spanNulls": true }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (instance, gc_heap_generation) (rate(dotnet_gc_collections_total{job=~\"$job\", instance=~\"$instance\"}[1m]))",
+          "legendFormat": "gen{{gc_heap_generation}} {{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Thread pool",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "dotnet_thread_pool_thread_count_total{job=~\"$job\", instance=~\"$instance\"}",
+          "legendFormat": "threads {{instance}}"
+        },
+        {
+          "refId": "B",
+          "expr": "dotnet_thread_pool_queue_length_total{job=~\"$job\", instance=~\"$instance\"}",
+          "legendFormat": "queue {{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Exceptions (rate)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "ops" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (instance) (rate(dotnet_exceptions_total{job=~\"$job\", instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    }
+  ]
+}
